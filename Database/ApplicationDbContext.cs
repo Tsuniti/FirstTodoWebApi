@@ -16,6 +16,21 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlite("Data source=users_todos.sql");
+        optionsBuilder.UseSqlite("Data source=users_todos.db");
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Todo>()
+            .HasOne(todo => todo.User)
+            .WithMany(user => user.Todos)
+            .HasForeignKey(todo => todo.UserId);
+        
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Username)
+            .IsUnique()
+            .HasFilter(null);
+        
+        
     }
 }

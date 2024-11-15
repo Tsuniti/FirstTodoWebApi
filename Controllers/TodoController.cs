@@ -1,17 +1,21 @@
-﻿using FirstTodoWebApi.Entities;
+﻿using System.Security.Claims;
+using FirstTodoWebApi.Entities;
 using FirstTodoWebApi.Interfaces;
 using FirstTodoWebApi.Models;
 using FirstTodoWebApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FirstTodoWebApi.Controllers;
 
 [Route("todo")]
+[Authorize]
 public class TodoController : ControllerBase
 {
     private readonly ITodoService _todoService;
 
+    private Guid UserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
     public TodoController(ITodoService todoService)
     {
@@ -21,7 +25,8 @@ public class TodoController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var todos = await _todoService.GetAllAsync();
+        Console.WriteLine("Userid: " + UserId);
+        var todos = await _todoService.GetAllAsync(UserId);
         return Ok(todos);
     }
 
@@ -37,7 +42,7 @@ public class TodoController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var todo = await _todoService.CreateAsync(model.Title, Guid.Empty);
+        var todo = await _todoService.CreateAsync(model.Title, UserId);
         return Ok(todo);
     }
 
@@ -47,7 +52,7 @@ public class TodoController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var todo = await _todoService.UpdateAsync(model.TodoId, model.UserId, model.Title, model.IsCompleted);
+        var todo = await _todoService.UpdateAsync(model.TodoId, UserId, model.Title, model.IsCompleted);
 
         if (todo is null)
             return BadRequest("Todo not found or wrong user");
@@ -61,7 +66,7 @@ public class TodoController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        if (!await _todoService.DeleteAsync(model.TodoId, model.UserId))
+        if (!await _todoService.DeleteAsync(model.TodoId, UserId))
             return BadRequest("Todo not found or wrong user");
 
         return Ok("Todo deleted");
@@ -73,7 +78,7 @@ public class TodoController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var todo = await _todoService.ToggleTodoAsync(model.TodoId, model.UserId);
+        var todo = await _todoService.ToggleTodoAsync(model.TodoId, UserId);
         if (todo is null)
             return BadRequest("Todo not found or wrong user");
         

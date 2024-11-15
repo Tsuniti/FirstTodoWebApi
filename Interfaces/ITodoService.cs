@@ -4,7 +4,7 @@ namespace FirstTodoWebApi.Interfaces;
 
 public interface ITodoService
 {
-    Task<IQueryable<Todo>> GetAllAsync();
+    Task<IQueryable<Todo>> GetAllAsync(Guid userId);
 
     Task<Todo?> GetByIdAsync(Guid id);
 

@@ -13,9 +13,9 @@ public class TodoService : ITodoService
     {
         _context = context;
     }
-    public async Task<IQueryable<Todo>> GetAllAsync()
+    public async Task<IQueryable<Todo>> GetAllAsync(Guid userId)
     {
-        return _context.Todos;
+        return _context.Todos.Where(t => t.UserId == userId);
     }
 
     public async Task<Todo?> GetByIdAsync(Guid id)
@@ -74,7 +74,7 @@ public class TodoService : ITodoService
     public async Task<Todo?> ToggleTodoAsync(Guid todoId, Guid userId)
     {
         var todo = await _context.Todos.FirstOrDefaultAsync(todo => todo.Id == todoId);
-        if (todo == null || todo.UserId != userId)
+        if (todo is null || todo.UserId != userId)
         {
             return null;
         }
