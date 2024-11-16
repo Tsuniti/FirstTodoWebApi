@@ -22,6 +22,12 @@ public class TodoController : ControllerBase
         _todoService = todoService;
     }
 
+    /// <summary>
+    /// Get all todos
+    /// </summary>
+    /// <response code="200">Success</response>
+    /// <returns>List of todos</returns>
+    [ProducesResponseType(typeof(IQueryable<Todo>), StatusCodes.Status200OK)]
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {

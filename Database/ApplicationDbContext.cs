@@ -1,16 +1,23 @@
-﻿using FirstTodoWebApi.Entities;
+﻿using System.Security.Cryptography;
+using System.Text;
+using FirstTodoWebApi.Entities;
 using FirstTodoWebApi.Interfaces;
+using FirstTodoWebApi.Options;
 using Microsoft.EntityFrameworkCore;
 
 namespace FirstTodoWebApi.Database;
 
 public class ApplicationDbContext : DbContext, IApplicationDbContext
 {
+    private readonly DatabaseOptions _databaseOptions;
+    private readonly FirstUserOptions _firstUserOptions;
     public DbSet<Todo> Todos { get; set; }
     public DbSet<User> Users { get; set; }
 
-    public ApplicationDbContext()
+    public ApplicationDbContext(DatabaseOptions databaseOptions, FirstUserOptions firstUserOptions)
     {
+        _databaseOptions = databaseOptions;
+         _firstUserOptions = firstUserOptions;
         Database.EnsureCreated();
     }
 
@@ -31,6 +38,19 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .IsUnique()
             .HasFilter(null);
         
-        
+        modelBuilder.Entity<User>()
+            .HasData(
+                new User
+                {
+                    Id = Guid.NewGuid(),
+                    Username = _firstUserOptions.Username,
+                    PasswordHash =
+                        BitConverter.ToString(SHA256.HashData(Encoding.UTF8.GetBytes(_firstUserOptions.Password))),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                });
+
+
+
     }
 }

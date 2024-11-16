@@ -3,6 +3,7 @@ using FirstTodoWebApi.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FirstTodoWebApi.Controllers;
+
 [Route("auth")]
 public class AuthController : ControllerBase
 {
@@ -15,6 +16,17 @@ public class AuthController : ControllerBase
         _jwtGenerator = jwtGenerator;
     }
 
+    /// <summary>
+    /// Create new user
+    /// </summary>
+    /// <param name="model">Model with username and password of new user</param>
+    /// <response code="200">Success</response>
+    /// <response code="400">Invalid request data</response>
+    /// <response code="409">User with username already exists</response>
+    /// <returns>None</returns>
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Dictionary<string, string[]>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status409Conflict)]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequestModel model)
     {

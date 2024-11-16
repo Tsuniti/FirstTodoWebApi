@@ -2,33 +2,31 @@
 using System.Security.Claims;
 using System.Text;
 using FirstTodoWebApi.Interfaces;
+using FirstTodoWebApi.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace FirstTodoWebApi.Services;
 
 public class JwtGenerator : IJwtGenerator
 {
-    private readonly string _secretKey = "ccf2e7b7-7606-477a-8e9f-39b30b6f9098";
-
-    private readonly string _issuer = "SprTodoWebApi";
-
-    private readonly string _audience = "SprTodoWebApiClient";
-
-    private readonly int _ttlMinutes = 5;
+    private readonly JwtOptions _jwtOptions;
 
     public TokenValidationParameters TokenValidationParameters { get; }
 
-    public JwtGenerator()
+    public JwtGenerator(JwtOptions jwtOptions)
     {
+
+        _jwtOptions = jwtOptions;
+        
         TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey)),
             ValidateLifetime = true,
             ValidateIssuer = true,
-            ValidIssuer = _issuer,
+            ValidIssuer = _jwtOptions.Issuer,
             ValidateAudience = true,
-            ValidAudience = _audience
+            ValidAudience = _jwtOptions.Audience
             
         };
     }
@@ -43,13 +41,13 @@ public class JwtGenerator : IJwtGenerator
         };
         
         // из секретного ключа формирируем "подпись" токена - его шифрование
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer: _issuer,
-            audience: _audience,
+            issuer: _jwtOptions.Issuer,
+            audience: _jwtOptions.Audience,
             claims: claims,
-            expires: DateTime.Now.AddMinutes(_ttlMinutes),
+            expires: DateTime.Now.AddMinutes(_jwtOptions.TtlMinutes),
             signingCredentials: credentials
         );
 
