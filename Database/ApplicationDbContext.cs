@@ -14,10 +14,12 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Todo> Todos { get; set; }
     public DbSet<User> Users { get; set; }
 
+    public DbSet<Comment> Comments { get; set; }
+
     public ApplicationDbContext(DatabaseOptions databaseOptions, FirstUserOptions firstUserOptions)
     {
         _databaseOptions = databaseOptions;
-         _firstUserOptions = firstUserOptions;
+        _firstUserOptions = firstUserOptions;
         Database.EnsureCreated();
     }
 
@@ -32,12 +34,17 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .HasOne(todo => todo.User)
             .WithMany(user => user.Todos)
             .HasForeignKey(todo => todo.UserId);
-        
+
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Username)
             .IsUnique()
             .HasFilter(null);
-        
+
+        modelBuilder.Entity<Comment>()
+            .HasOne(comment => comment.Todo)
+            .WithMany(todo => todo.Comments)
+            .HasForeignKey(comment => comment.TodoId);
+
         modelBuilder.Entity<User>()
             .HasData(
                 new User
@@ -49,8 +56,5 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
                 });
-
-
-
     }
 }

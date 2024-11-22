@@ -31,17 +31,40 @@ public class TodoController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        Console.WriteLine("Userid: " + UserId);
         var todos = await _todoService.GetAllAsync(UserId);
         return Ok(todos);
     }
 
+    /// <summary>
+    /// Get todo by id
+    /// </summary>
+    /// <param name="id">Todo id</param>
+    /// <response code="200">Success</response>
+    /// <response code="404">Todo with the specified ID was not found</response>
+    /// <returns>Todo with the specified ID</returns>
+    [ProducesResponseType(typeof(IQueryable<Todo>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status404NotFound)]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        return Ok(await _todoService.GetByIdAsync(id));
+        var todo = await _todoService.GetByIdAsync(id, UserId);
+        
+        if (todo is null)
+            return NotFound("Todo with the specified ID was not found, or access denied");
+        
+        return Ok(todo);
     }
-
+    
+    
+    /// <summary>
+    /// Create new todo
+    /// </summary>
+    /// <param name="model">Model with title of todo</param>
+    /// <response code="200">Success</response>
+    /// <response code="400">Invalid request data</response>
+    /// <returns>Created todo</returns>
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Dictionary<string, string[]>), StatusCodes.Status400BadRequest)]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTodoRequestModel model)
     {
@@ -52,6 +75,18 @@ public class TodoController : ControllerBase
         return Ok(todo);
     }
 
+    
+    /// <summary>
+    /// Update todo
+    /// </summary>
+    /// <param name="model">Model with todo id, new title, new status(isCompleted)</param>
+    /// <response code="200">Success</response>
+    /// <response code="400">Invalid request data</response>
+    /// <response code="404">Todo not found or access denied</response>
+    /// <returns>Updated todo</returns>
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Dictionary<string, string[]>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status404NotFound)]
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] UpdateTodoRequestModel model)
     {
@@ -61,11 +96,22 @@ public class TodoController : ControllerBase
         var todo = await _todoService.UpdateAsync(model.TodoId, UserId, model.Title, model.IsCompleted);
 
         if (todo is null)
-            return BadRequest("Todo not found or wrong user");
+            return NotFound("Todo not found or wrong user");
 
         return Ok(todo);
     }
 
+    /// <summary>
+    /// Delete todo
+    /// </summary>
+    /// <param name="model">Model with todo id</param>
+    /// <response code="200">Success</response>
+    /// <response code="400">Invalid request data</response>
+    /// <response code="404">Todo not found or access denied</response>
+    /// <returns>string</returns>
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Dictionary<string, string[]>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status404NotFound)]
     [HttpDelete]
     public async Task<IActionResult> Delete([FromBody] DeleteTodoRequestModel model)
     {
@@ -73,11 +119,21 @@ public class TodoController : ControllerBase
             return BadRequest(ModelState);
 
         if (!await _todoService.DeleteAsync(model.TodoId, UserId))
-            return BadRequest("Todo not found or wrong user");
+            return NotFound("Todo not found or wrong user");
 
         return Ok("Todo deleted");
     }
-
+    /// <summary>
+    /// Toggle todo status(IsCompeted)
+    /// </summary>
+    /// <param name="model">Model with todo id</param>
+    /// <response code="200">Success</response>
+    /// <response code="400">Invalid request data</response>
+    /// <response code="404">Todo not found or access denied</response>
+    /// <returns>string</returns>
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Dictionary<string, string[]>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status404NotFound)]
     [HttpPut("toggle")]
     public async Task<IActionResult> ToggleTodo([FromBody] ToggleTodoRequestModel model)
     {
@@ -86,10 +142,9 @@ public class TodoController : ControllerBase
 
         var todo = await _todoService.ToggleTodoAsync(model.TodoId, UserId);
         if (todo is null)
-            return BadRequest("Todo not found or wrong user");
+            return NotFound("Todo not found or wrong user");
         
         return Ok(todo);
-
     }
     
 }

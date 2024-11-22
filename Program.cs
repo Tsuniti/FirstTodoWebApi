@@ -25,6 +25,8 @@ var builder = WebApplication.CreateBuilder(args);
 
     builder.Services.AddScoped<IUserService, UserService>();
 
+    builder.Services.AddScoped<ICommentService, CommentService>();
+
     builder.Services.AddSingleton<IJwtGenerator, JwtGenerator>();
     var serviceProvider = builder.Services.BuildServiceProvider();
 

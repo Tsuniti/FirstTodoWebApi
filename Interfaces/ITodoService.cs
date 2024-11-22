@@ -6,7 +6,7 @@ public interface ITodoService
 {
     Task<IQueryable<Todo>> GetAllAsync(Guid userId);
 
-    Task<Todo?> GetByIdAsync(Guid id);
+    Task<Todo?> GetByIdAsync(Guid todoId, Guid userId);
 
     Task<Todo> CreateAsync(string title, Guid userId);
 

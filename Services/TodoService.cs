@@ -15,12 +15,21 @@ public class TodoService : ITodoService
     }
     public async Task<IQueryable<Todo>> GetAllAsync(Guid userId)
     {
-        return _context.Todos.Where(t => t.UserId == userId);
+        return _context.Todos
+            .Include(t => t.Comments)
+            .Where(t => t.UserId == userId);
     }
 
-    public async Task<Todo?> GetByIdAsync(Guid id)
+    public async Task<Todo?> GetByIdAsync(Guid todoId, Guid userId)
     {
-        return await _context.Todos.FirstOrDefaultAsync(todo => todo.Id == id);
+        var todo = await _context.Todos
+            .Include(t => t.Comments)
+            .FirstOrDefaultAsync(todo => todo.Id == todoId);
+        
+        if (todo is null || todo.UserId != userId)
+            return null;
+        
+        return todo;
     }
 
     public async Task<Todo> CreateAsync(string title, Guid userId)
@@ -84,4 +93,5 @@ public class TodoService : ITodoService
 
         return todo;
     }
+    
 }

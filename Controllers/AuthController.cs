@@ -45,7 +45,19 @@ public class AuthController : ControllerBase
 
         return Ok();
     }
-
+    
+    
+    /// <summary>
+    /// Login
+    /// </summary>
+    /// <param name="model">Model with username and password of existing user</param>
+    /// <response code="200">Success</response>
+    /// <response code="400">Invalid request data</response>
+    /// <response code="404">User with username and password not found</response>
+    /// <returns>None</returns>
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Dictionary<string, string[]>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(IActionResult), StatusCodes.Status404NotFound)]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequestModel model)
     {
